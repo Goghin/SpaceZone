@@ -7,7 +7,7 @@ public class EnemyScript : MonoBehaviour
   [SerializeField]private GameObject MaterialDrop;
   [SerializeField]private ParticleSystem PSPrefab;
   [SerializeField]private EnemyData enemyData;
-  public string Name;   
+    
   private int HitPoints, Damage, Bursts;    
   private float Speed, FireRate, ProjectileSpeed, CoolDown = 3; 
   private Sprite Model;
@@ -18,7 +18,7 @@ public class EnemyScript : MonoBehaviour
   private Rigidbody2D body;
   private int Level;
   private EnemyState currentState;
-  private Vector3 PlayerPosition;
+  private GameObject Player;
   public enum EnemyState 
   {
     Idle,
@@ -51,8 +51,8 @@ public class EnemyScript : MonoBehaviour
 
   public void Initialize(int lvl)
   {
-    PlayerPosition = GameObject.FindGameObjectWithTag("Player").transform.position;
-    Name = enemyData.Name;  
+    Player = GameObject.FindGameObjectWithTag("Player");
+    gameObject.name = enemyData.Name;  
     HitPoints = enemyData.HitPoints;
     Speed= enemyData.Speed;
     Model = enemyData.Model;  
@@ -64,8 +64,8 @@ public class EnemyScript : MonoBehaviour
     ProjectileColor = enemyData.color;
          
     SpriteRenderer spr = GetComponent<SpriteRenderer>();
-    spr.sprite = Model; //Picks sprite from array                        
-    PolygonCollider2D pgc = gameObject.AddComponent(typeof(PolygonCollider2D)) as PolygonCollider2D; // Adds collider                      
+    spr.sprite = Model;                        
+    PolygonCollider2D pgc = gameObject.AddComponent(typeof(PolygonCollider2D)) as PolygonCollider2D; // Adds collider  based on sprite alpha                    
     body = gameObject.GetComponent<Rigidbody2D>();
                                           
   }  
@@ -73,7 +73,7 @@ public class EnemyScript : MonoBehaviour
   private void Attack()
   {        
     GameObject gunfire = Instantiate (Projectile, transform.position, transform.rotation);          
-    gunfire.GetComponent<EnemyProjectileScript>().Initialize(PlayerPosition, Damage, ProjectileSpeed, ProjectileColor);
+    gunfire.GetComponent<EnemyProjectileScript>().Initialize(Player.transform.position, Damage, ProjectileSpeed, ProjectileColor);
     CoolDown += 60/FireRate;
   }
 
@@ -84,7 +84,11 @@ public class EnemyScript : MonoBehaviour
 
   void Update()
   {
-        
+    CoolDown -= Time.deltaTime;
+    if(CoolDown<0)
+    {
+      Attack();
+    }
   }
 
   void OnCollisionEnter2D(Collision2D collision)
@@ -156,7 +160,7 @@ public class EnemyScript : MonoBehaviour
       Shards.GetComponent<Renderer>().material.color = newColor;   
       Shards.transform.localScale = Scale * 2f; 
     }
-    if (Random.Range(0,101)<=50)
+    if (Random.Range(0,101)<=100)
     {
       GameObject lootdrop = Instantiate(MaterialDrop, transform.position, transform.rotation);        
       // Initialize(int amount )
