@@ -1,0 +1,201 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class EnemyScript : MonoBehaviour
+{
+  [SerializeField]private GameObject MaterialDrop;
+  [SerializeField]private ParticleSystem PSHitEmit;
+  [SerializeField]private EnemyData enemyData;
+
+  private ParticleSystem PsAttack;  
+  private int HitPoints, Damage, Bursts;    
+  private float Speed, FireRate, ProjectileSpeed, CoolDown = 3; 
+  private Sprite Model;
+  private GameObject Projectile; 
+  private Color ProjectileColor; 
+  private Vector3 Scale;
+  private Color newColor;
+  private Rigidbody2D body;
+  private int Level;
+  private EnemyState currentState;
+  private GameObject Player;
+  private float accuracy;
+
+  public enum EnemyState 
+
+  
+  {
+    Idle,
+    Attack,
+    Move,
+    Avoid
+  }
+
+  private void TakeAction()
+  {
+    switch(currentState)
+    {
+      case EnemyState.Idle:
+      break;
+
+      case EnemyState.Attack:
+      break;
+
+      case EnemyState.Move:
+      break;
+
+      case EnemyState.Avoid:
+      break;
+
+      default:
+      break;
+    }
+
+  }
+
+  public void Initialize(int lvl)
+  {
+    Player = GameObject.FindGameObjectWithTag("Player");
+    gameObject.name = enemyData.Name;  
+    HitPoints = enemyData.HitPoints;
+    Speed= enemyData.Speed;
+    Model = enemyData.Model;  
+    Bursts = enemyData.Bursts;
+    Damage = enemyData.Damage;    
+    FireRate = enemyData.FireRate;
+    ProjectileSpeed = enemyData.ProjectileSpeed;
+    Projectile = enemyData.Projectile;
+    ProjectileColor = enemyData.color;
+    accuracy = enemyData.Accuracy;
+         
+    SpriteRenderer spr = GetComponent<SpriteRenderer>();
+    spr.sprite = Model;      
+
+    PolygonCollider2D pgc = gameObject.AddComponent(typeof(PolygonCollider2D)) as PolygonCollider2D; // Adds collider  based on sprite alpha                    
+    body = gameObject.GetComponent<Rigidbody2D>();
+
+    PsAttack = gameObject.GetComponentInChildren<ParticleSystem>();
+    ParticleSystem.MainModule settings = PsAttack.main;
+    settings.startColor = new ParticleSystem.MinMaxGradient( ProjectileColor );
+                                          
+  }  
+
+  IEnumerator Fire()
+  {    
+    for (int a = 1; a <= Bursts; a++)
+
+    {
+      float spreadX = 1 + Random.Range( (-100+accuracy)/100, (100-accuracy)/100 );
+      float spreadY = 1 + Random.Range( (-100+accuracy)/100, (100-accuracy)/100 ); 
+      Vector3 target = (Player.transform.position - transform.position);    
+      target.x *= spreadX;
+      target.y *= spreadY;   
+      GameObject gunfire = Instantiate (Projectile, transform.position, transform.rotation);         
+      gunfire.GetComponent<EnemyProjectileScript>().Initialize(target, Damage, ProjectileSpeed, ProjectileColor);
+      PsAttack.Play();
+      yield return new WaitForSeconds(.15f);
+    } 
+  }
+
+  private void Attack()
+  { 
+    CoolDown += 60/FireRate;
+    StartCoroutine(Fire());   
+  }
+
+  void Awake()
+  {
+        
+  }
+
+  void Update()
+  {
+    CoolDown -= Time.deltaTime;
+    if(CoolDown<0)
+    {
+      Attack();
+    }
+  }
+
+  void OnCollisionEnter2D(Collision2D collision)
+  {          
+    if ((collision.gameObject.tag == "Enemy") & (collision.gameObject.name == "Asteroid"))
+    {
+      ParticleSystem Shards = Instantiate( PSHitEmit, new Vector3( collision.GetContact(0).point.x , collision.GetContact(0).point.y , 1) , transform.rotation);                    
+      Rigidbody2D other = collision.gameObject.GetComponent<Rigidbody2D>();
+      transform.GetComponent<Rigidbody2D>().AddForce(collision.GetContact(0).normal * other.mass * 50f);     
+      TakeDamage(1) ;                
+    }
+
+    if (collision.gameObject.tag == "Player")
+    {                    
+      Death();              
+    }
+
+    if (collision.gameObject.tag == "Projectile")
+    {
+      Gun killer = collision.gameObject.GetComponent<BulletScript>().FiredFrom;
+      int dmg = collision.gameObject.GetComponent<BulletScript>().gunDamage;
+      float force = collision.gameObject.GetComponent<BulletScript>().Force;
+      transform.GetComponent<Rigidbody2D>().AddForce(collision.GetContact(0).normal * 200f*force);          
+      ParticleSystem Shards = Instantiate( PSHitEmit, new Vector3( collision.GetContact(0).point.x , collision.GetContact(0).point.y , 1) , transform.rotation); 
+      Shards.transform.localScale = new Vector3(.16f,.16f,1);         
+      TakeDamage(dmg , killer);        
+    }
+               
+  }
+
+  void OnTriggerEnter2D(Collider2D collision)
+  {          
+    if (collision.gameObject.tag == "Projectile")
+    {
+      Gun killer = collision.gameObject.GetComponent<BulletScript>().FiredFrom;
+      int dmg = collision.gameObject.GetComponent<BulletScript>().gunDamage;                             
+      ParticleSystem Shards = Instantiate( PSHitEmit,  transform.position , transform.rotation);
+      //Shards.GetComponent<Renderer>().material.color = newColor;   
+      Shards.transform.localScale = new Vector3(.16f,.16f,1); 
+      TakeDamage(dmg , killer);        
+    }
+  }
+
+  
+
+  public void TakeDamage(int dmg)
+  {      
+    HitPoints -= dmg;     
+    if (HitPoints < 1)
+    {         
+      Death();
+    }
+  }
+
+  public void TakeDamage(int dmg, Gun killer)
+  {      
+    HitPoints -= dmg;     
+    if (HitPoints < 1)
+    {   
+      killer.AddKill(this.name);
+              
+      Death();
+    }
+  }
+
+  public void Death()
+  {
+    for (int i = 0; i < Random.Range(3,10); i++)
+    {
+      ParticleSystem Shards = Instantiate( PSHitEmit, transform.position , transform.rotation);
+      Shards.GetComponent<Renderer>().material.color = newColor;   
+      Shards.transform.localScale =  new Vector3(.26f,.26f,1); 
+    }
+    if (Random.Range(0,101)<=100)
+    {
+      GameObject lootdrop = Instantiate(MaterialDrop, transform.position, transform.rotation);        
+      // Initialize(int amount )
+      lootdrop.GetComponent<MaterialsScript>().Initialize( 1 ); //Different Amounts ??
+    }
+    Destroy(gameObject); 
+  }
+
+}
