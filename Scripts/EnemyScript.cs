@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class EnemyScript : MonoBehaviour
 {
@@ -8,6 +9,7 @@ public class EnemyScript : MonoBehaviour
   [SerializeField]private ParticleSystem PSHitEmit;
   [SerializeField]private EnemyData enemyData;
 
+  private Vector3 Direction;
   private ParticleSystem PsAttack;  
   private int HitPoints, Damage, Bursts;    
   private float Speed, FireRate, ProjectileSpeed, CoolDown = 3; 
@@ -21,45 +23,74 @@ public class EnemyScript : MonoBehaviour
   private EnemyState currentState;
   private GameObject Player;
   private float accuracy;
+  private EnemyManagerScript EnemyManager;
 
   public enum EnemyState  
   {
     Disturbed,
     Attacking,
     Moving,
-    Avoiding
+    Avoiding,
+    Retreating
   }
+
 
   private void TakeAction()
   {
     switch(currentState)
     {
       case EnemyState.Disturbed:
-      CoolDown += 3f;
+      CoolDown += 2f;  // do nothing for 2 seconds, then reset state ?? Adds 2s weapon cooldown....
       currentState = EnemyState.Attacking;  
       break;
 
       case EnemyState.Attacking:
-      Attack();
+      if(CoolDown<0)
+      { 
+        CoolDown += 60 / FireRate;           
+        StartCoroutine(Fire());  
+      }
         
       break;
 
       case EnemyState.Moving:
+      Move();
       break;
 
       case EnemyState.Avoiding:
+      
+      for ( int i=0; i<Random.Range(1,4); i++)
+      {
+      Move();
+      }
+      
+      break;
+
+      case EnemyState.Retreating:
       break;
 
       default:
-      CoolDown += 1f;
       currentState = EnemyState.Attacking;  
       break;
     }
 
   }
 
-  public void Initialize(int lvl)
+  IEnumerator ActionStarter()
   {
+    for(;;)
+    {
+      //5 checks & actions per second
+      CheckAttackRange();
+      CheckNearest();
+      TakeAction();
+      yield return new WaitForSeconds(.2f);
+    }
+  }
+
+  public void Initialize(int lvl, EnemyManagerScript em)
+  {
+    EnemyManager = em;
     Player = GameObject.FindGameObjectWithTag("Player");
     gameObject.name = enemyData.Name;  
     HitPoints = enemyData.HitPoints;
@@ -82,38 +113,33 @@ public class EnemyScript : MonoBehaviour
     PsAttack = gameObject.GetComponentInChildren<ParticleSystem>();
     ParticleSystem.MainModule settings = PsAttack.main;
     settings.startColor = new ParticleSystem.MinMaxGradient( ProjectileColor );
+
+    StartCoroutine(ActionStarter());
                                           
   }  
 
   IEnumerator Fire()
-  {    
+  {      
     for (int a = 1; a <= Bursts; a++)
-
-    {
-      float spreadX = 1 + Random.Range( (-100+accuracy)/100, (100-accuracy)/100 );
-      float spreadY = 1 + Random.Range( (-100+accuracy)/100, (100-accuracy)/100 ); 
-      Vector3 target = (Player.transform.position - transform.position);    
-      target.x *= spreadX;
-      target.y *= spreadY;   
-      GameObject gunfire = Instantiate (Projectile, transform.position, transform.rotation);         
-      gunfire.GetComponent<EnemyProjectileScript>().Initialize(target, Damage, ProjectileSpeed, ProjectileColor);
-      PsAttack.Play();
-      yield return new WaitForSeconds(.15f);
-    } 
+      {
+        float spreadX = 1 + Random.Range( (-100+accuracy)/100, (100-accuracy)/100 );
+        float spreadY = 1 + Random.Range( (-100+accuracy)/100, (100-accuracy)/100 ); 
+        Vector3 target = (Player.transform.position - transform.position);    
+        target.x *= spreadX;
+        target.y *= spreadY;   
+        GameObject gunfire = Instantiate (Projectile, transform.position, transform.rotation);         
+        gunfire.GetComponent<EnemyProjectileScript>().Initialize(target, Damage, ProjectileSpeed, ProjectileColor);
+        PsAttack.Play();
+        yield return new WaitForSeconds(.15f);
+      }     
   }
 
-  private void Attack()
-  { 
-    CoolDown += 60/FireRate;
-    StartCoroutine(Fire());   
-  }
 
   void Update()
-  {
-    CoolDown -= Time.deltaTime;
-    if(CoolDown<0)
+  { 
+    if (CoolDown > 0 )
     {
-      TakeAction();
+      CoolDown -= Time.deltaTime;
     }
   }
 
@@ -192,9 +218,64 @@ public class EnemyScript : MonoBehaviour
     {
       GameObject lootdrop = Instantiate(MaterialDrop, transform.position, transform.rotation);        
       // Initialize(int amount )
-      lootdrop.GetComponent<MaterialsScript>().Initialize( 1 ); //Different Amounts ??
+      lootdrop.GetComponent<MaterialsScript>().Initialize( 1 ); //Different Amounts based on level??
     }
     Destroy(gameObject); 
   }
+
+  public void OnDisable()
+  {
+    EnemyManager.EnemiesList.Remove(gameObject);
+
+  }
+
+  public void Move()
+  {
+    transform.GetComponent<Rigidbody2D>().AddForce(Direction * Speed * 200f); 
+    currentState = EnemyState.Attacking;
+  }
+
+  public void CheckAttackRange()
+  {
+    Vector3 target = (Player.transform.position - transform.position);
+    if (target.sqrMagnitude < 5)
+    {
+      Direction = -target.normalized;
+      currentState = EnemyState.Avoiding;
+    }
+    else if (target.sqrMagnitude < 60)
+    {
+      currentState = EnemyState.Attacking;
+    }
+    else  
+    {
+      Direction = target.normalized;
+      currentState = EnemyState.Moving;     
+    }        
+  }  
+    
+    
+     
+  public void CheckNearest()
+  {    
+    GameObject current = null;
+    float distance = 9999f;
+    foreach(GameObject g in EnemyManager.EnemiesList)
+    {
+        float dist =   (g.transform.position - transform.position).sqrMagnitude;
+        if ((dist < distance) & (g != gameObject ))
+        {
+          current = g;
+          distance = dist;
+        }    
+    }
+    if(( current != null) && (distance < 5f))
+    {
+      Direction = -(current.transform.position - gameObject.transform.position).normalized ;
+      currentState = EnemyState.Avoiding;
+      Debug.Log("Entered avoiding, " + distance + " from " + current);
+    }        
+  }
+
 
 }

@@ -6,6 +6,7 @@ public class EnemyManagerScript : MonoBehaviour
 {
     
     [SerializeField] private GameObject  Asteroid, Drone, AssaultDrone;
+    public List<GameObject> EnemiesList = new List<GameObject>(); 
     [SerializeField] private float SpawnCooldown;
     private int AsteroidLevel=1;
       
@@ -24,24 +25,24 @@ public class EnemyManagerScript : MonoBehaviour
         if (SpawnCooldown < 0)
         {   
             SpawnCooldown += Random.Range(2f,5f);
-
             int r = Random.Range(1,101);
-            Debug.Log("Rolled "+r);
+            //Debug.Log("Rolled "+r);
             if (r<5)
             {
                 SpawnAssaultDrones(Random.Range(1,3));
-                Debug.Log("Assault drone");
+                //Debug.Log("Assault drone");
             }
             if ((r>5) & (r<25))
             {
                 SpawnDrones(Random.Range(1,4));
-                Debug.Log("Drone");
+                // Debug.Log("Drone");
             }
             if ((r>25) & (r<100))
             {
-            SpawnAsteroids(Random.Range(3,12));
-            Debug.Log("Asteroids");
-            }      
+                SpawnAsteroids(Random.Range(3,12));
+                //Debug.Log("Asteroids");
+            }
+            Debug.Log(ReportEnemyList());      
         }
     }
 
@@ -58,30 +59,34 @@ public class EnemyManagerScript : MonoBehaviour
                 Vector2 direction = new Vector2(Random.Range( -1.6f , 1.6f ), Random.Range(-2f,-3f));
                 float scale = Random.Range( .075f , .18f );
 
-                asteroid.GetComponent<AsteroidScript>().Initialize(hp, speed, direction, scale);
+                asteroid.GetComponent<AsteroidScript>().Initialize(hp, speed, direction, scale, this);
                 Collider2D coll = asteroid.GetComponent<Collider2D>();
                 
                 if (coll.IsTouching(new ContactFilter2D().NoFilter())) 
                     {
+                        
                         Destroy(asteroid);
                         SpawnAsteroids(1);
                         Debug.Log("Collision, retry");
                     }
-            }                  
+                EnemiesList.Add(asteroid);
+            }       
     }
+
+    
 
      void SpawnDrones(int amount)
     {
         for (int i = 0; i < amount; i++) 
             {            
-                GameObject enemy = Instantiate(Drone, new Vector3(Random.Range( -12f , 12f ), Random.Range( 4f , 6f ) ,0), Quaternion.Euler(0, 0, Random.Range(0,360))) ;
+                GameObject enemy = Instantiate(Drone, new Vector3(Random.Range( -12f , 12f ), Random.Range( 8f , 9f ) ,0), Quaternion.Euler(0, 0, Random.Range(0,360))) ;
                 
                 //int hp = 8 + (7*AsteroidLevel) ;
                 //float speed = 50 + Random.Range( 20f, 100f );
                 //Vector2 direction = new Vector2(Random.Range( -1.6f , 1.6f ), Random.Range(-2f,-3f));
                 //float scale = Random.Range( .075f , .18f );
 
-                enemy.GetComponent<EnemyScript>().Initialize(1); // Level
+                enemy.GetComponent<EnemyScript>().Initialize(1, this); // Level
                 Collider2D coll = enemy.GetComponent<Collider2D>();
                 
                 if (coll.IsTouching(new ContactFilter2D().NoFilter())) 
@@ -90,21 +95,22 @@ public class EnemyManagerScript : MonoBehaviour
                         SpawnDrones(1);
                         Debug.Log("Collision, retry");
                     }
-            }                  
+                EnemiesList.Add(enemy);    
+            }                              
     }
 
     void SpawnAssaultDrones(int amount)
     {
         for (int i = 0; i < amount; i++) 
             {            
-                GameObject enemy = Instantiate(AssaultDrone, new Vector3(Random.Range( -12f , 12f ), Random.Range( 4f , 6f ) ,0), Quaternion.Euler(0, 0, Random.Range(0,360))) ;
+                GameObject enemy = Instantiate(AssaultDrone, new Vector3(Random.Range( -12f , 12f ), Random.Range( 8f , 9f ) ,0), Quaternion.Euler(0, 0, Random.Range(0,360))) ;
                 
                 //int hp = 8 + (7*AsteroidLevel) ;
                 //float speed = 50 + Random.Range( 20f, 100f );
                 //Vector2 direction = new Vector2(Random.Range( -1.6f , 1.6f ), Random.Range(-2f,-3f));
                 //float scale = Random.Range( .075f , .18f );
 
-                enemy.GetComponent<EnemyScript>().Initialize(1); // Level
+                enemy.GetComponent<EnemyScript>().Initialize(1, this); // Level
                 Collider2D coll = enemy.GetComponent<Collider2D>();
                 
                 if (coll.IsTouching(new ContactFilter2D().NoFilter())) 
@@ -113,8 +119,19 @@ public class EnemyManagerScript : MonoBehaviour
                         SpawnAssaultDrones(1);
                         Debug.Log("Collision, retry");
                     }
+            EnemiesList.Add(enemy);  
             }                  
     }
 
+    public string ReportEnemyList()  
+    {
+        string result = "Enemies: " + EnemiesList.Count ;
+        for (int i = 0; i < EnemiesList.Count; i++)
+        {   
+            string c = " "+ EnemiesList[i].name +",";
+            result += c;            
+        }
+        return result;
+    }    
 
 }

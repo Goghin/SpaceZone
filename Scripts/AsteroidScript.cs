@@ -12,9 +12,11 @@ public class AsteroidScript : MonoBehaviour
     private Vector3 Scale;
     private Color newColor;
     private Rigidbody2D body;
+    private EnemyManagerScript EnemyManager;
  
-    public void Initialize(int Hp, float s, Vector2 dir, float scale)
+    public void Initialize(int Hp, float s, Vector2 dir, float scale, EnemyManagerScript em)
           {
+            EnemyManager = em;
             SpriteRenderer spr = GetComponent<SpriteRenderer>();
             spr.sprite = SpriteArray[Random.Range(0, SpriteArray.Length)]; //Picks sprite from array                        
             newColor = new Color( Random.Range(.33f,.8f), Random.Range(.33f,.8f), Random.Range(.33f,.8f), 1.0f );
@@ -108,7 +110,14 @@ public class AsteroidScript : MonoBehaviour
           // Initialize(int amount )
           lootdrop.GetComponent<MaterialsScript>().Initialize( 1 ); //Different Amounts ??
           }
+
+        
         Destroy(gameObject); 
+     }
+
+     public void OnDisable()
+     {
+      EnemyManager.EnemiesList.Remove(gameObject);
      }
 
 }

@@ -45,7 +45,7 @@ public class PlayerStats : MonoBehaviour
         PlayerShieldsText.text = "" + PlayerShields ;
         if (PlayerShields < 1) 
         {
-            string killtext = Player.GetComponent<PlayerMovementScript>().MainGun.GetComponentInChildren<Gun>().ReportKillList();
+            string killtext = Player.GetComponent<PlayerMovementScript>().MainGun.GetComponentInChildren<Gun>().ReportKillList(); // If dead without MainGun assigned
             IsAlive = false;
             GameOverCanvas.gameObject.SetActive(true);
              PauseMenuScript PMS = GameObject.Find("PauseCanvas").GetComponent<PauseMenuScript>();
