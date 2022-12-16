@@ -22,33 +22,37 @@ public class EnemyScript : MonoBehaviour
   private GameObject Player;
   private float accuracy;
 
-  public enum EnemyState 
-
-  
+  public enum EnemyState  
   {
-    Idle,
-    Attack,
-    Move,
-    Avoid
+    Disturbed,
+    Attacking,
+    Moving,
+    Avoiding
   }
 
   private void TakeAction()
   {
     switch(currentState)
     {
-      case EnemyState.Idle:
+      case EnemyState.Disturbed:
+      CoolDown += 3f;
+      currentState = EnemyState.Attacking;  
       break;
 
-      case EnemyState.Attack:
+      case EnemyState.Attacking:
+      Attack();
+        
       break;
 
-      case EnemyState.Move:
+      case EnemyState.Moving:
       break;
 
-      case EnemyState.Avoid:
+      case EnemyState.Avoiding:
       break;
 
       default:
+      CoolDown += 1f;
+      currentState = EnemyState.Attacking;  
       break;
     }
 
@@ -104,17 +108,12 @@ public class EnemyScript : MonoBehaviour
     StartCoroutine(Fire());   
   }
 
-  void Awake()
-  {
-        
-  }
-
   void Update()
   {
     CoolDown -= Time.deltaTime;
     if(CoolDown<0)
     {
-      Attack();
+      TakeAction();
     }
   }
 
@@ -122,10 +121,12 @@ public class EnemyScript : MonoBehaviour
   {          
     if ((collision.gameObject.tag == "Enemy") & (collision.gameObject.name == "Asteroid"))
     {
-      ParticleSystem Shards = Instantiate( PSHitEmit, new Vector3( collision.GetContact(0).point.x , collision.GetContact(0).point.y , 1) , transform.rotation);                    
+      ParticleSystem Shards = Instantiate( PSHitEmit, new Vector3( collision.GetContact(0).point.x , collision.GetContact(0).point.y , 1) , transform.rotation);  
+      Shards.transform.localScale = new Vector3(.16f,.16f,1);                  
       Rigidbody2D other = collision.gameObject.GetComponent<Rigidbody2D>();
       transform.GetComponent<Rigidbody2D>().AddForce(collision.GetContact(0).normal * other.mass * 50f);     
-      TakeDamage(1) ;                
+      TakeDamage(1) ;  
+      currentState = EnemyState.Disturbed;              
     }
 
     if (collision.gameObject.tag == "Player")
@@ -159,8 +160,6 @@ public class EnemyScript : MonoBehaviour
     }
   }
 
-  
-
   public void TakeDamage(int dmg)
   {      
     HitPoints -= dmg;     
@@ -183,7 +182,7 @@ public class EnemyScript : MonoBehaviour
 
   public void Death()
   {
-    for (int i = 0; i < Random.Range(3,10); i++)
+    for (int i = 0; i < Random.Range(10,20); i++)
     {
       ParticleSystem Shards = Instantiate( PSHitEmit, transform.position , transform.rotation);
       Shards.GetComponent<Renderer>().material.color = newColor;   

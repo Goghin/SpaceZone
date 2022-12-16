@@ -35,7 +35,7 @@ public class PlayerMovementScript : MonoBehaviour
         SpeedCostText.text = "3";
         spcost = 3;
         
-        PlayerStats.Instance.TakeDamage(-3);    //Set shield to 3
+        PlayerStats.Instance.TakeDamage(-30);    //Set shield to 3
     
         Speed = 1.8f;   
         PlayerStats.Instance.IsAlive = true; 
@@ -60,7 +60,7 @@ public class PlayerMovementScript : MonoBehaviour
         {
             inputY = 0;
         }
-        // Add thruster particles on move
+        // Add side thruster particles on move
 
         Vector3 movement = new Vector3( Speed * inputX, Speed * inputY, 0);
         transform.Translate(movement * Time.fixedDeltaTime);
@@ -95,10 +95,10 @@ public class PlayerMovementScript : MonoBehaviour
     void OnCollisionEnter2D(Collision2D other)
     {
         
-        if(other.gameObject.tag == "Enemy")
+        if(other.gameObject.name == "Asteroid")
         {
             AsteroidScript es = other.gameObject.GetComponent<AsteroidScript>();
-             PlayerStats.Instance.TakeDamage(1);  // es.damage ?           
+             PlayerStats.Instance.TakeDamage(es.HitPoints);             
         }
     }
 

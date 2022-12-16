@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b338a53c8f17d0f488d7fedbd4b2f9bc, type: 3}
   m_Name: AssaultDrone
   m_EditorClassIdentifier: 
-  Name: Drone
+  Name: Assault Drone
   HitPoints: 25
   Speed: 2
   Model: {fileID: 21300000, guid: f632378d4b9dcae4f9174683445a32bc, type: 3}

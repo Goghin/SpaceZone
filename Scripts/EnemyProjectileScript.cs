@@ -38,7 +38,13 @@ public class EnemyProjectileScript : MonoBehaviour
         {
         SR.color = color;
         }
+
+        PolygonCollider2D pgc = gameObject.AddComponent(typeof(PolygonCollider2D)) as PolygonCollider2D;
+        pgc.isTrigger = true;
+
         Destroy(gameObject, 10);
+
+        
 
     }
 
@@ -47,23 +53,22 @@ public class EnemyProjectileScript : MonoBehaviour
         
     }
 
-    void OnCollisionEnter2D(Collision2D collision)
-    {               
-        if (collision.gameObject.tag == "Player")
-        {            
-          
-            Destroy(gameObject);
-                
-        }
-        
-    }
+    
 
     void OnTriggerEnter2D(Collider2D collision)
     {               
-        if  (collision.gameObject.tag == "Asteroid")
+        if  (collision.gameObject.name == "Asteroid")
         {            
           
             Destroy(gameObject);
+               
+        }
+
+        if  (collision.gameObject.tag == "Player")
+        {            
+          
+            Destroy(gameObject);
+            collision.gameObject.GetComponent<PlayerStats>().TakeDamage(1);
                
         }
         

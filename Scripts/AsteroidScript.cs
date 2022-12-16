@@ -5,7 +5,7 @@ using UnityEngine;
 public class AsteroidScript : MonoBehaviour
 {
 
-    private int HitPoints;    
+    public int HitPoints;    
     [SerializeField]private GameObject MaterialDrop;
     [SerializeField]private ParticleSystem PSPrefab;
     [SerializeField]private Sprite[] SpriteArray;
@@ -38,7 +38,7 @@ public class AsteroidScript : MonoBehaviour
           Shards.GetComponent<Renderer>().material.color = newColor;   
           Shards.transform.localScale = Scale; 
           Rigidbody2D other = collision.gameObject.GetComponent<Rigidbody2D>();
-          transform.GetComponent<Rigidbody2D>().AddForce(collision.GetContact(0).normal * other.mass * 50f);     
+          transform.GetComponent<Rigidbody2D>().AddForce(collision.GetContact(0).normal * other.mass * 30f);     
           TakeDamage(1) ;                
         }
 

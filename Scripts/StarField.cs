@@ -12,18 +12,17 @@ public class StarField : MonoBehaviour
 	public float	FieldWidth = 20f;
 	public float	FieldHeight = 25f;
 	public float	ParallaxFactor = 0f;
-	public bool		Colorize = false;
-	
+		
 	float 				xOffset;
 	float 				yOffset;
 
 	ParticleSystem Particles;
 	ParticleSystem.Particle[] Stars;
-	Transform theCamera;
+	
 
 	void Awake ()
 	{
-		theCamera = Camera.main.transform;
+		
 		Stars = new ParticleSystem.Particle[ MaxStars ];
 		Particles = GetComponent<ParticleSystem>();
 
@@ -35,7 +34,7 @@ public class StarField : MonoBehaviour
 		for ( int i=0; i<MaxStars; i++ )
 		{
 			float randSize = Random.Range( 1f - StarSizeRange, StarSizeRange + 1f );			// Randomize star size within parameters
-			float scaledColor = ( true == Colorize ) ? randSize - StarSizeRange : 1f;			// If coloration is desired, color based on size
+			float scaledColor =  randSize - StarSizeRange;			// If coloration is desired, color based on size
 			Stars[ i ].position = GetRandomInRectangle( FieldWidth, FieldHeight ) + transform.position;
 			Stars[ i ].startSize = StarSize * randSize;
 			Stars[ i ].startColor = new Color( 1f, scaledColor, scaledColor, 1f );           
