@@ -23,3 +23,6 @@ MonoBehaviour:
   Accuracy: 75
   Projectile: {fileID: 6319152683238741909, guid: 2526f1bec4e568c4b990c2b86783f371, type: 3}
   color: {r: 0.9433962, g: 0.013349922, b: 0.8406586, a: 0.9019608}
+  ShootSound: {fileID: 8300000, guid: bf9442b2e09d0314082a9ab9b589888a, type: 3}
+  GetHitSound: {fileID: 8300000, guid: b03ae481c36a9674c96148c4893ab3f1, type: 3}
+  DeathSound: {fileID: 8300000, guid: 77808c93e091d234d9918d482254c2f0, type: 3}

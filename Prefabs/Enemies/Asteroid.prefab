@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 356998823482451305}
   - component: {fileID: 4196161083208477901}
   - component: {fileID: 317015962273460039}
+  - component: {fileID: 6992033868620704557}
   m_Layer: 3
   m_Name: Asteroid
   m_TagString: Enemy
@@ -46,7 +47,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ac6cdedff5d6074fbffeebe3fee1955, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  HitPoints: 0
   MaterialDrop: {fileID: 2345723103415401088, guid: 89fa3b9fa3d016d488d29c39fa51bc17, type: 3}
+  audioPrefab: {fileID: 8436823564669828597, guid: 11b2611588cc7b043afa7221062ba2e4, type: 3}
   PSPrefab: {fileID: 1150785493681475691, guid: 77394c162791c5e48b8d03815ee66634, type: 3}
   SpriteArray:
   - {fileID: 1298592152, guid: 95b651c016b35aa46ab7ef001d0d4e13, type: 3}
@@ -64,6 +67,8 @@ MonoBehaviour:
   - {fileID: 1135782406, guid: 95b651c016b35aa46ab7ef001d0d4e13, type: 3}
   - {fileID: -2048824123, guid: 95b651c016b35aa46ab7ef001d0d4e13, type: 3}
   - {fileID: -357298124, guid: 95b651c016b35aa46ab7ef001d0d4e13, type: 3}
+  GetHitSound: {fileID: 8300000, guid: 30e861e13816b574588d6412810c4a93, type: 3}
+  DeathSound: {fileID: 8300000, guid: 31d16b45ce5207a42a570ca672a943f6, type: 3}
 --- !u!50 &4196161083208477901
 Rigidbody2D:
   serializedVersion: 4
@@ -137,3 +142,99 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!82 &6992033868620704557
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4080847876123482931}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 0.5
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4

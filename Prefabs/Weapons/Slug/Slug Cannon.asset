@@ -25,3 +25,4 @@ MonoBehaviour:
   MaxRPM: 300
   Bullet: {fileID: 8810619783465759580, guid: 7512d43bfb247a142acdec5c76dba9b6, type: 3}
   color: {r: 1, g: 0.8033599, b: 0.2028302, a: 1}
+  ShootSound: {fileID: 8300000, guid: 6d1a030e536790b4f8dd0f5869602ef1, type: 3}
