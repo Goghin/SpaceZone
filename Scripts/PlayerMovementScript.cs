@@ -35,7 +35,7 @@ public class PlayerMovementScript : MonoBehaviour
         SpeedCostText.text = "3";
         spcost = 3;
         
-        PlayerStats.Instance.TakeDamage(-30);    //Set shield to 3
+        PlayerStats.Instance.TakeDamage(-3000);    //Set shield to 3
     
         Speed = 1.8f;   
         PlayerStats.Instance.IsAlive = true; 

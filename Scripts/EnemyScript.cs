@@ -24,6 +24,7 @@ public class EnemyScript : MonoBehaviour
   private GameObject Player;
   private float accuracy;
   private EnemyManagerScript EnemyManager;
+  private int Ammo = 10; 
 
   public enum EnemyState  
   {
@@ -46,27 +47,28 @@ public class EnemyScript : MonoBehaviour
 
       case EnemyState.Attacking:
       if(CoolDown<0)
-      { 
-        CoolDown += 60 / FireRate;           
-        StartCoroutine(Fire());  
-      }
-        
+        {        
+          CoolDown += 60 / FireRate;           
+          Ammo -=1;
+          StartCoroutine(Fire());            
+        }                     
       break;
 
       case EnemyState.Moving:
       Move();
       break;
 
-      case EnemyState.Avoiding:
-      
+      case EnemyState.Avoiding:      
       for ( int i=0; i<Random.Range(1,4); i++)
       {
-      Move();
-      }
-      
+        Move();
+      }     
       break;
 
       case EnemyState.Retreating:
+      Vector3 target = (Player.transform.position - transform.position);
+      Direction = -target.normalized;      
+      Move();
       break;
 
       default:
@@ -82,6 +84,7 @@ public class EnemyScript : MonoBehaviour
     {
       //5 checks & actions per second
       CheckAttackRange();
+      CheckIfInsideView();
       CheckNearest();
       TakeAction();
       yield return new WaitForSeconds(.2f);
@@ -119,7 +122,7 @@ public class EnemyScript : MonoBehaviour
   }  
 
   IEnumerator Fire()
-  {      
+  {     
     for (int a = 1; a <= Bursts; a++)
       {
         float spreadX = 1 + Random.Range( (-100+accuracy)/100, (100-accuracy)/100 );
@@ -208,11 +211,10 @@ public class EnemyScript : MonoBehaviour
 
   public void Death()
   {
-    for (int i = 0; i < Random.Range(10,20); i++)
+    for (int i = 0; i < 3; i++)
     {
       ParticleSystem Shards = Instantiate( PSHitEmit, transform.position , transform.rotation);
-      Shards.GetComponent<Renderer>().material.color = newColor;   
-      Shards.transform.localScale =  new Vector3(.26f,.26f,1); 
+      Shards.transform.localScale =  new Vector3(Random.Range(.16f,.3f),Random.Range(.16f,.3f),1);     
     }
     if (Random.Range(0,101)<=100)
     {
@@ -232,7 +234,6 @@ public class EnemyScript : MonoBehaviour
   public void Move()
   {
     transform.GetComponent<Rigidbody2D>().AddForce(Direction * Speed * 200f); 
-    currentState = EnemyState.Attacking;
   }
 
   public void CheckAttackRange()
@@ -251,11 +252,14 @@ public class EnemyScript : MonoBehaviour
     {
       Direction = target.normalized;
       currentState = EnemyState.Moving;     
-    }        
+    }  
+    if (Ammo < 1)
+        {
+          Direction = -target.normalized;
+          currentState = EnemyState.Retreating;     
+        }      
   }  
     
-    
-     
   public void CheckNearest()
   {    
     GameObject current = null;
@@ -277,5 +281,31 @@ public class EnemyScript : MonoBehaviour
     }        
   }
 
+  private void CheckIfInsideView()
+  {
+    float posX = transform.position.x;
+    float posY = transform.position.y;
+
+    if(posX > 12.5f)
+    {
+      Direction = new Vector3 (-1, Direction.y, Direction.z );
+      currentState = EnemyState.Moving;
+    }
+    if(posX < -12.5f)
+    {
+      Direction = new Vector3 (1, Direction.y, Direction.z );
+      currentState = EnemyState.Moving;
+    }
+    if(posY > 6.5f)
+    {
+      Direction = new Vector3 (Direction.x, -1, Direction.z );
+      currentState = EnemyState.Moving;
+    }
+    if(posY < -5f)
+    {
+      Direction = new Vector3 (Direction.x, 1, Direction.z );
+      currentState = EnemyState.Moving;
+    }
+  }
 
 }
