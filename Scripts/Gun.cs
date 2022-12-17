@@ -23,9 +23,12 @@ public class Gun : MonoBehaviour
     public int Kills = 0;
     public float Force = 1;
     private ParticleSystem PS;
+    private AudioClip ShootSound;
+    AudioSource SoundPlayer;
 
     void Awake()
     {
+       SoundPlayer = gameObject.GetComponent<AudioSource>();
        Name = weaponData.Name; 
        Cost = weaponData.Basecost;
        Damage  = weaponData.Damage;
@@ -36,6 +39,7 @@ public class Gun : MonoBehaviour
        PS = gameObject.GetComponentInChildren<ParticleSystem>();
        ParticleSystem.MainModule settings = PS.main;
        settings.startColor = new ParticleSystem.MinMaxGradient( weaponData.color );
+       ShootSound = weaponData.ShootSound;
     }   
 
     void Update()
@@ -67,7 +71,8 @@ public class Gun : MonoBehaviour
         GameObject bullet = Instantiate(weaponData.Bullet, transform.position, transform.rotation) ;           
         //  Initialize(int dmg, float speed, Color c, Vector3 direction, float lifeTime, int maxhits,, float force, Reference to Gun Script)
         bullet.GetComponent<BulletScript>().Initialize(Damage, weaponData.ProjectileSpeed, weaponData.color, new Vector3( 0, 1 ,0 ), LifeTime, Hits, Force, this );    // Needs to find a vector for gun rotation              
-        
+        SoundPlayer.clip = ShootSound;
+        SoundPlayer.Play();
         PS.Play();    
         
     }

@@ -21,5 +21,12 @@ public class EnemyData : ScriptableObject
     public float Accuracy;
     public GameObject Projectile; 
     public Color color; 
+
+    [Header("Sounds")]
+    public AudioClip ShootSound;
+    public AudioClip GetHitSound;
+    public AudioClip DeathSound;
+
+
    
 }

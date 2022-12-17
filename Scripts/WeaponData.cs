@@ -26,5 +26,9 @@ public class WeaponData : ScriptableObject
     [Header("Projectile")]
     public GameObject Bullet; 
     public Color color; 
+
+    [Header("Sounds")]
+    public AudioClip ShootSound; 
+
    
 }

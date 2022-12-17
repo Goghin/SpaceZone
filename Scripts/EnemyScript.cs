@@ -5,7 +5,7 @@ using System.Linq;
 
 public class EnemyScript : MonoBehaviour
 {
-  [SerializeField]private GameObject MaterialDrop;
+  [SerializeField]private GameObject MaterialDrop, audioPrefab;
   [SerializeField]private ParticleSystem PSHitEmit;
   [SerializeField]private EnemyData enemyData;
 
@@ -25,6 +25,10 @@ public class EnemyScript : MonoBehaviour
   private float accuracy;
   private EnemyManagerScript EnemyManager;
   private int Ammo = 10; 
+  private AudioSource SoundPlayer;
+  private AudioClip ShootSound;
+  private AudioClip GetHitSound;
+  private AudioClip DeathSound;
 
   public enum EnemyState  
   {
@@ -93,6 +97,10 @@ public class EnemyScript : MonoBehaviour
 
   public void Initialize(int lvl, EnemyManagerScript em)
   {
+    SoundPlayer = GetComponent<AudioSource>();
+    ShootSound = enemyData.ShootSound;
+    GetHitSound = enemyData.GetHitSound;
+    DeathSound = enemyData.DeathSound;
     EnemyManager = em;
     Player = GameObject.FindGameObjectWithTag("Player");
     gameObject.name = enemyData.Name;  
@@ -132,6 +140,8 @@ public class EnemyScript : MonoBehaviour
         target.y *= spreadY;   
         GameObject gunfire = Instantiate (Projectile, transform.position, transform.rotation);         
         gunfire.GetComponent<EnemyProjectileScript>().Initialize(target, Damage, ProjectileSpeed, ProjectileColor);
+        SoundPlayer.clip = ShootSound;
+        SoundPlayer.Play();
         PsAttack.Play();
         yield return new WaitForSeconds(.15f);
       }     
@@ -150,6 +160,8 @@ public class EnemyScript : MonoBehaviour
   {          
     if ((collision.gameObject.tag == "Enemy") & (collision.gameObject.name == "Asteroid"))
     {
+      SoundPlayer.clip = GetHitSound;
+      SoundPlayer.Play();
       ParticleSystem Shards = Instantiate( PSHitEmit, new Vector3( collision.GetContact(0).point.x , collision.GetContact(0).point.y , 1) , transform.rotation);  
       Shards.transform.localScale = new Vector3(.16f,.16f,1);                  
       Rigidbody2D other = collision.gameObject.GetComponent<Rigidbody2D>();
@@ -165,6 +177,8 @@ public class EnemyScript : MonoBehaviour
 
     if (collision.gameObject.tag == "Projectile")
     {
+      SoundPlayer.clip = GetHitSound;
+      SoundPlayer.Play();
       Gun killer = collision.gameObject.GetComponent<BulletScript>().FiredFrom;
       int dmg = collision.gameObject.GetComponent<BulletScript>().gunDamage;
       float force = collision.gameObject.GetComponent<BulletScript>().Force;
@@ -180,6 +194,8 @@ public class EnemyScript : MonoBehaviour
   {          
     if (collision.gameObject.tag == "Projectile")
     {
+      SoundPlayer.clip = GetHitSound;
+      SoundPlayer.Play();
       Gun killer = collision.gameObject.GetComponent<BulletScript>().FiredFrom;
       int dmg = collision.gameObject.GetComponent<BulletScript>().gunDamage;                             
       ParticleSystem Shards = Instantiate( PSHitEmit,  transform.position , transform.rotation);
@@ -211,6 +227,7 @@ public class EnemyScript : MonoBehaviour
 
   public void Death()
   {
+    
     for (int i = 0; i < 3; i++)
     {
       ParticleSystem Shards = Instantiate( PSHitEmit, transform.position , transform.rotation);
@@ -222,7 +239,13 @@ public class EnemyScript : MonoBehaviour
       // Initialize(int amount )
       lootdrop.GetComponent<MaterialsScript>().Initialize( 1 ); //Different Amounts based on level??
     }
-    Destroy(gameObject); 
+    GameObject clone = Instantiate(audioPrefab, transform.position, transform.rotation) as GameObject;
+    AudioSource cloneAudio = clone.GetComponent<AudioSource>();
+    cloneAudio.clip = DeathSound;
+    cloneAudio.Play();
+    Destroy(clone, DeathSound.length + 0.1f);
+    Destroy(gameObject);       
+    
   }
 
   public void OnDisable()

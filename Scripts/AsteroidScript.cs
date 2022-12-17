@@ -6,16 +6,21 @@ public class AsteroidScript : MonoBehaviour
 {
 
     public int HitPoints;    
-    [SerializeField]private GameObject MaterialDrop;
+    [SerializeField]private GameObject MaterialDrop, audioPrefab;
     [SerializeField]private ParticleSystem PSPrefab;
     [SerializeField]private Sprite[] SpriteArray;
     private Vector3 Scale;
     private Color newColor;
     private Rigidbody2D body;
     private EnemyManagerScript EnemyManager;
+    private AudioSource SoundPlayer;
+  
+    [SerializeField]private AudioClip GetHitSound;
+   [SerializeField] private AudioClip DeathSound;
  
     public void Initialize(int Hp, float s, Vector2 dir, float scale, EnemyManagerScript em)
           {
+            SoundPlayer = GetComponent<AudioSource>();
             EnemyManager = em;
             SpriteRenderer spr = GetComponent<SpriteRenderer>();
             spr.sprite = SpriteArray[Random.Range(0, SpriteArray.Length)]; //Picks sprite from array                        
@@ -36,6 +41,8 @@ public class AsteroidScript : MonoBehaviour
     {          
       if (collision.gameObject.tag == "Enemy")
         {
+          SoundPlayer.clip = GetHitSound;
+          SoundPlayer.Play();
           ParticleSystem Shards = Instantiate( PSPrefab, new Vector3( collision.GetContact(0).point.x , collision.GetContact(0).point.y , 1) , transform.rotation);
           Shards.GetComponent<Renderer>().material.color = newColor;   
           Shards.transform.localScale = Scale; 
@@ -50,7 +57,9 @@ public class AsteroidScript : MonoBehaviour
         }
 
         if (collision.gameObject.tag == "Projectile")
-        {
+        { 
+          SoundPlayer.clip = GetHitSound;
+          SoundPlayer.Play();
           Gun killer = collision.gameObject.GetComponent<BulletScript>().FiredFrom;
           int dmg = collision.gameObject.GetComponent<BulletScript>().gunDamage;
           float force = collision.gameObject.GetComponent<BulletScript>().Force;
@@ -67,6 +76,8 @@ public class AsteroidScript : MonoBehaviour
     {          
     if (collision.gameObject.tag == "Projectile")
         {
+          SoundPlayer.clip = GetHitSound;
+          SoundPlayer.Play();
           Gun killer = collision.gameObject.GetComponent<BulletScript>().FiredFrom;
           int dmg = collision.gameObject.GetComponent<BulletScript>().gunDamage;                             
           ParticleSystem Shards = Instantiate( PSPrefab,  transform.position , transform.rotation);
@@ -110,9 +121,13 @@ public class AsteroidScript : MonoBehaviour
           // Initialize(int amount )
           lootdrop.GetComponent<MaterialsScript>().Initialize( 1 ); //Different Amounts ??
           }
-
+          GameObject clone = Instantiate(audioPrefab, transform.position, transform.rotation) as GameObject;
+          AudioSource cloneAudio = clone.GetComponent<AudioSource>();
+          cloneAudio.clip = DeathSound;
+          cloneAudio.Play();
+          Destroy(clone, DeathSound.length + 0.1f);
         
-        Destroy(gameObject); 
+        Destroy(gameObject);        
      }
 
      public void OnDisable()
