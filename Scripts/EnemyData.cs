@@ -21,12 +21,15 @@ public class EnemyData : ScriptableObject
     public float Accuracy;
     public GameObject Projectile; 
     public Color color; 
+    public float MinRange;
+    public float MaxRange;
+    public int Ammo;
 
-    [Header("Sounds")]
+    [Header("Data")]
     public AudioClip ShootSound;
     public AudioClip GetHitSound;
     public AudioClip DeathSound;
-
+    public ParticleSystem DeathParticles;
 
    
 }
