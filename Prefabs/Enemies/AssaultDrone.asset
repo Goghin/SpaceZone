@@ -14,15 +14,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Name: Assault Drone
   HitPoints: 25
-  Speed: 5
+  Speed: 7
   Model: {fileID: 21300000, guid: d8727f1ecb368bc4b9469fcd243f7d4e, type: 3}
   Bursts: 3
   Damage: 8
-  FireRate: 22
+  FireRate: 20
   ProjectileSpeed: 5
-  Accuracy: 60
+  Accuracy: 50
   Projectile: {fileID: 6319152683238741909, guid: 2526f1bec4e568c4b990c2b86783f371, type: 3}
   color: {r: 0.94509804, g: 0.011764705, b: 0.18675002, a: 0.9019608}
+  MinRange: 5
+  MaxRange: 50
+  Ammo: 10
   ShootSound: {fileID: 8300000, guid: bf9442b2e09d0314082a9ab9b589888a, type: 3}
   GetHitSound: {fileID: 8300000, guid: b03ae481c36a9674c96148c4893ab3f1, type: 3}
   DeathSound: {fileID: 8300000, guid: 77808c93e091d234d9918d482254c2f0, type: 3}
+  DeathParticles: {fileID: 569928582327036113, guid: 5441598a3383c3d4090248b9ca1b9055, type: 3}

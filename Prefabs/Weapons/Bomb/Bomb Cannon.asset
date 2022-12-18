@@ -19,7 +19,7 @@ MonoBehaviour:
   ProjectileSpeed: 0.8
   Hits: 1
   LifeTime: 5
-  Force: 200
+  Force: 80
   dmgPerLVL: 2
   FRperLVL: 1.12
   MaxRPM: 45

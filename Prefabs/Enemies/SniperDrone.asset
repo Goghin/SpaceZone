@@ -10,22 +10,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b338a53c8f17d0f488d7fedbd4b2f9bc, type: 3}
-  m_Name: Drone
+  m_Name: SniperDrone
   m_EditorClassIdentifier: 
-  Name: Drone
-  HitPoints: 25
-  Speed: 7
-  Model: {fileID: 21300000, guid: f632378d4b9dcae4f9174683445a32bc, type: 3}
+  Name: Sniper Drone
+  HitPoints: 35
+  Speed: 4
+  Model: {fileID: 21300000, guid: 3ff128724fa3337408098e51ebdfce1d, type: 3}
   Bursts: 1
-  Damage: 10
-  FireRate: 25
-  ProjectileSpeed: 5
-  Accuracy: 75
-  Projectile: {fileID: 6319152683238741909, guid: 2526f1bec4e568c4b990c2b86783f371, type: 3}
-  color: {r: 0.9433962, g: 0.013349922, b: 0.8406586, a: 0.9019608}
-  MinRange: 5
-  MaxRange: 60
-  Ammo: 10
+  Damage: 20
+  FireRate: 20
+  ProjectileSpeed: 10
+  Accuracy: 90
+  Projectile: {fileID: 6319152683238741909, guid: 2bcd0f694c918f14ab42deae468ebbb1, type: 3}
+  color: {r: 0.050062295, g: 0.7075472, b: 0.28485048, a: 1}
+  MinRange: 50
+  MaxRange: 180
+  Ammo: 25
   ShootSound: {fileID: 8300000, guid: bf9442b2e09d0314082a9ab9b589888a, type: 3}
   GetHitSound: {fileID: 8300000, guid: b03ae481c36a9674c96148c4893ab3f1, type: 3}
   DeathSound: {fileID: 8300000, guid: 77808c93e091d234d9918d482254c2f0, type: 3}

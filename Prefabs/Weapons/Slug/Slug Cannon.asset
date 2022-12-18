@@ -19,10 +19,10 @@ MonoBehaviour:
   ProjectileSpeed: 1.2
   Hits: 1
   LifeTime: 5
-  Force: 8
+  Force: 30
   dmgPerLVL: 1
   FRperLVL: 1.1
   MaxRPM: 300
   Bullet: {fileID: 8810619783465759580, guid: 7512d43bfb247a142acdec5c76dba9b6, type: 3}
-  color: {r: 1, g: 0.8033599, b: 0.2028302, a: 1}
+  color: {r: 1, g: 0.54440176, b: 0.20392156, a: 0.8666667}
   ShootSound: {fileID: 8300000, guid: 6d1a030e536790b4f8dd0f5869602ef1, type: 3}
