@@ -5,13 +5,15 @@ using System.Linq;
 
 public class EnemyScript : MonoBehaviour
 {
-  [SerializeField]private GameObject MaterialDrop, audioPrefab;
+  [SerializeField]private GameObject lootDropPrefab;
   [SerializeField]private ParticleSystem PSHitEmit;
   [SerializeField]private EnemyData enemyData;
 
+  public int HitPoints;
+
   private Vector3 Direction;
   private ParticleSystem PsAttack;  
-  private int HitPoints, Damage, Bursts;    
+  private int Damage, Bursts;    
   private float Speed, FireRate, ProjectileSpeed, CoolDown = 3; 
   private Sprite Model;
   private GameObject Projectile; 
@@ -25,14 +27,12 @@ public class EnemyScript : MonoBehaviour
   private float accuracy;
   private EnemyManagerScript EnemyManager;
   private int Ammo = 10; 
-  private AudioSource SoundPlayer;
-  private AudioClip ShootSound;
-  private AudioClip GetHitSound;
-  private AudioClip DeathSound;
   private ParticleSystem DeathParticles;
   private float MinRange = 5;
   private float MaxRange = 60;
-  SpriteRenderer spr;
+  private SpriteRenderer spr;
+  private PolygonCollider2D pgc;
+  private bool IsDead = false;
 
   public enum EnemyState  
   {
@@ -102,23 +102,23 @@ public class EnemyScript : MonoBehaviour
 
   public void Initialize(int lvl, EnemyManagerScript em)
   {
-    DeathParticles = enemyData.DeathParticles;
-    SoundPlayer = GetComponent<AudioSource>();
-    ShootSound = enemyData.ShootSound;
-    GetHitSound = enemyData.GetHitSound;
-    DeathSound = enemyData.DeathSound;
     EnemyManager = em;
+    DeathParticles = enemyData.DeathParticles;
     Player = GameObject.FindGameObjectWithTag("Player");
-    gameObject.name = enemyData.Name;  
-    HitPoints = enemyData.HitPoints;
-    Speed= enemyData.Speed;
+
+    gameObject.name = enemyData.Name; 
     Model = enemyData.Model;  
-    Bursts = enemyData.Bursts;
-    Damage = enemyData.Damage;    
-    FireRate = enemyData.FireRate;
-    ProjectileSpeed = enemyData.ProjectileSpeed;
+
+    HitPoints = enemyData.HitPoints * lvl;
+    Speed= enemyData.Speed + (float)lvl * .2f;
+    ProjectileSpeed = enemyData.ProjectileSpeed + (float)lvl * .2f;
+    Bursts = enemyData.Bursts + (lvl-1);
+    Damage = (int) (enemyData.Damage * ((float)lvl * .5f));    
+    FireRate = enemyData.FireRate + (float)lvl * .2f;
+    
     Projectile = enemyData.Projectile;
     ProjectileColor = enemyData.color;
+    
     accuracy = enemyData.Accuracy;
     MinRange = enemyData.MinRange;
     MaxRange = enemyData.MaxRange;
@@ -127,12 +127,14 @@ public class EnemyScript : MonoBehaviour
     spr = GetComponent<SpriteRenderer>();
     spr.sprite = Model;      
 
-    PolygonCollider2D pgc = gameObject.AddComponent(typeof(PolygonCollider2D)) as PolygonCollider2D; // Adds collider  based on sprite alpha                    
+    pgc = gameObject.AddComponent(typeof(PolygonCollider2D)) as PolygonCollider2D; // Adds collider  based on sprite alpha                    
     body = gameObject.GetComponent<Rigidbody2D>();
 
     PsAttack = gameObject.GetComponentInChildren<ParticleSystem>();
     ParticleSystem.MainModule settings = PsAttack.main;
     settings.startColor = new ParticleSystem.MinMaxGradient( ProjectileColor );
+
+    Debug.Log("Im a " + lvl + " " + name );
 
     StartCoroutine(ActionStarter());
                                           
@@ -149,9 +151,6 @@ public class EnemyScript : MonoBehaviour
         target.y *= spreadY;   
         GameObject gunfire = Instantiate (Projectile, transform.position, transform.rotation);         
         gunfire.GetComponent<EnemyProjectileScript>().Initialize(target, Damage, ProjectileSpeed, ProjectileColor);
-        
-        SoundPlayer.clip = ShootSound;
-        SoundPlayer.Play();
         PsAttack.Play();
         yield return new WaitForSeconds(.15f);
       }     
@@ -170,32 +169,32 @@ public class EnemyScript : MonoBehaviour
   {          
     if ((collision.gameObject.tag == "Enemy") & (collision.gameObject.name == "Asteroid"))
     {
-      SoundPlayer.clip = GetHitSound;
-      SoundPlayer.Play();
       ParticleSystem Shards = Instantiate( PSHitEmit, new Vector3( collision.GetContact(0).point.x , collision.GetContact(0).point.y , 1) , transform.rotation);  
-      Shards.transform.localScale = new Vector3(.16f,.16f,1);                  
-      Rigidbody2D other = collision.gameObject.GetComponent<Rigidbody2D>();
-      transform.GetComponent<Rigidbody2D>().AddForce(collision.GetContact(0).normal * other.mass * 50f);     
+      Shards.transform.localScale = new Vector3(.25f,.25f,1);                  
+      if( (body != null) && (collision.gameObject.GetComponent<Rigidbody2D>() != null))
+      {
+        body.AddForce(collision.GetContact(0).normal * collision.gameObject.GetComponent<Rigidbody2D>().mass * 50f); 
+      }     
       TakeDamage(1) ;  
       currentState = EnemyState.Disturbed;              
     }
 
     if (collision.gameObject.tag == "Player")
     {                    
-      Death();              
+      //Death();              
     }
 
     if (collision.gameObject.tag == "Projectile")
     {
-      SoundPlayer.clip = GetHitSound;
-      SoundPlayer.Play();
       Gun killer = collision.gameObject.GetComponent<BulletScript>().FiredFrom;
       int dmg = collision.gameObject.GetComponent<BulletScript>().gunDamage;
-      float force = collision.gameObject.GetComponent<BulletScript>().Force;
-      Rigidbody2D rb = transform.GetComponent<Rigidbody2D>();
-      rb.AddForce(collision.GetContact(0).normal * rb.mass * 2f *force);          
+      float force = collision.gameObject.GetComponent<BulletScript>().Force;     
+      if( body!=null)
+      {
+        body.AddForce(collision.GetContact(0).normal * body.mass * 2f *force);    
+      }      
       ParticleSystem Shards = Instantiate( PSHitEmit, new Vector3( collision.GetContact(0).point.x , collision.GetContact(0).point.y , 1) , transform.rotation); 
-      Shards.transform.localScale = new Vector3(.16f,.16f,1);         
+      Shards.transform.localScale = new Vector3(.16f,.16f,1)* (1+(float)dmg/100);         
       TakeDamage(dmg , killer);        
     }
                
@@ -205,13 +204,11 @@ public class EnemyScript : MonoBehaviour
   {          
     if (collision.gameObject.tag == "Projectile")
     {
-      SoundPlayer.clip = GetHitSound;
-      SoundPlayer.Play();
       Gun killer = collision.gameObject.GetComponent<BulletScript>().FiredFrom;
       int dmg = collision.gameObject.GetComponent<BulletScript>().gunDamage;                             
       ParticleSystem Shards = Instantiate( PSHitEmit,  transform.position , transform.rotation);
       //Shards.GetComponent<Renderer>().material.color = newColor;   
-      Shards.transform.localScale = new Vector3(.16f,.16f,1); 
+      Shards.transform.localScale = new Vector3(.16f,.16f,1)* (1+(float)dmg/100); 
       TakeDamage(dmg , killer);        
     }
   }
@@ -230,11 +227,11 @@ public class EnemyScript : MonoBehaviour
     HitPoints -= dmg;     
     if (HitPoints < 1)
     {   
-      killer.AddKill(this.name);
-              
+      killer.AddKill(this.name);            
       Death();
     }
   }
+
   IEnumerator Iexplosions(int amount, float spread)
   {
     for (int i=0;i<amount;i++)
@@ -244,42 +241,57 @@ public class EnemyScript : MonoBehaviour
     }
     Destroy(gameObject);  
   }
-  public void Death()
+  private void Death()
   {
+    //Destroy(body);
+    pgc.enabled = false;
     Ammo=0;
     Speed=0;
     spr.sprite = null;     
     if (name == "Boss Drone")
       {     
-        StartCoroutine(Iexplosions(5,1.2f));
+        StartCoroutine(Iexplosions(5, 1.2f));
+        DropLoot(3, 1f);
       }
     else 
       {
         StartCoroutine(Iexplosions(1, 0f));
-      }
-    if (Random.Range(0,101)<=100)
-      {
-        GameObject lootdrop = Instantiate(MaterialDrop, transform.position, transform.rotation);        
-        // Initialize(int amount )
-        lootdrop.GetComponent<MaterialsScript>().Initialize( 1 ); //Different Amounts based on level??
-      }
-         
-    
+        if (Random.Range(0,101)<=100)
+        {       
+          DropLoot(1, .2f);
+        }
+      } 
   }
 
-  public void OnDisable()
+  void DropLoot(int amount, float spread)
+  {
+    if(IsDead != true)
+    {
+      IsDead = true;
+      for (int  i=0; i<amount; i++)
+      { 
+          GameObject lootdrop = Instantiate(lootDropPrefab, transform.position + new Vector3 (Random.Range(-spread,spread), Random.Range(-spread,spread),0), Quaternion.identity);                
+          lootdrop.GetComponent<LootDrop>().Initialize(  ); //Different Amounts based on level??     
+      }
+    }     
+  }
+
+  private void OnDisable()
   {
     EnemyManager.EnemiesList.Remove(gameObject);
 
   }
 
-  public void Move()
+  private void Move()
   {
-    Rigidbody2D rb = transform.GetComponent<Rigidbody2D>();
-    rb.AddForce(Direction * Speed * 2f * rb.mass); 
+    if( body!=null)
+    {
+      body.AddForce(Direction * Speed * 2f * body.mass);
+    }
+     
   }
 
-  public void CheckAttackRange()
+  private void CheckAttackRange()
   {
     Vector3 target = (Player.transform.position - transform.position);
     if (target.sqrMagnitude < MinRange)
@@ -303,7 +315,7 @@ public class EnemyScript : MonoBehaviour
         }      
   }  
     
-  public void CheckNearest()
+  private void CheckNearest()
   { 
     if(name!="Kamikaze Drone")   
     {
@@ -332,22 +344,22 @@ public class EnemyScript : MonoBehaviour
     float posY = transform.position.y;
     if (Ammo > 0)
     {
-      if(posX > 12.5f)
+      if(posX > 12.7f)
       {
         Direction = new Vector3 (-1, Direction.y, Direction.z );
         currentState = EnemyState.Moving;
       }
-      if(posX < -12.5f)
+      if(posX < -12.7f)
       {
         Direction = new Vector3 (1, Direction.y, Direction.z );
         currentState = EnemyState.Moving;
       }
-      if(posY > 6.5f)
+      if(posY > 6.7f)
       {
         Direction = new Vector3 (Direction.x, -1, Direction.z );
         currentState = EnemyState.Moving;
       }
-      if(posY < -5f)
+      if(posY < -6.5f)
       {
         Direction = new Vector3 (Direction.x, 1, Direction.z );
         currentState = EnemyState.Moving;
@@ -355,17 +367,13 @@ public class EnemyScript : MonoBehaviour
     }
   }
 
-
   void SpawnExplosion(float spread)
   {
       ParticleSystem Shards = Instantiate( PSHitEmit, transform.position , transform.rotation);
-      Shards.transform.localScale =  new Vector3(Random.Range(.18f,.23f),Random.Range(.18f,.23f),1);    
+      Shards.transform.localScale =  new Vector3(Random.Range(.25f,.4f),Random.Range(.25f,.4f),1);    
       ParticleSystem explosion = Instantiate( DeathParticles, transform.position + new Vector3 (Random.Range(-spread,spread), Random.Range(-spread,spread),0), transform.rotation );
-      GameObject clone = Instantiate(audioPrefab, transform.position, transform.rotation) as GameObject;
-      AudioSource cloneAudio = clone.GetComponent<AudioSource>();
-      cloneAudio.clip = DeathSound;
-      cloneAudio.Play();
-      Destroy(clone, DeathSound.length + 0.1f);
+      
+      
 
 
   }

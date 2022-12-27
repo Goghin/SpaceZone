@@ -8,6 +8,7 @@ public class PauseMenuScript : MonoBehaviour
     
     public static bool GameIsPaused = false;
     [SerializeField]private GameObject PauseMenuUI;
+    private List<GameObject> PanelsList = new List<GameObject>();
 
     void Update()
     {
@@ -23,7 +24,6 @@ public class PauseMenuScript : MonoBehaviour
 
         }
     }
-
 
     public void ResumeGame()
     {
@@ -41,7 +41,33 @@ public class PauseMenuScript : MonoBehaviour
 
     public void QuitGame()
     {
-    SceneManager.LoadScene(0);
+     SceneManager.LoadScene("MainMenu");
+    }
+
+
+    public void AddToPanelsList(GameObject item)
+    {
+        PanelsList.Add(item);
+    }
+
+    public void CloseAllPanels()
+    {
+        if (PanelsList.Count != 0)
+        {
+            foreach (GameObject item in PanelsList)
+            {
+                item.gameObject.SetActive(false);
+            }
+        }
     }
     
+    
 }
+
+
+
+    
+
+   
+
+   

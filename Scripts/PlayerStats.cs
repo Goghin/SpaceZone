@@ -2,35 +2,36 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-
+using UnityEngine.UI;
 
 public class PlayerStats : MonoBehaviour
 {
-       
+    [SerializeField]public Engine engine;   
     public bool IsAlive = false;
     public static PlayerStats Instance { get; private set; }
     [SerializeField] public GameObject Player, GameOverCanvas;
-    public int PlayerMaterials, PlayerShields;   
-    [SerializeField] private TMP_Text MaterialsText, PlayerShieldsText, DistanceText, SpeedText, TravelSummary, KillSummary;
-    public double Distance = 0, Speed = 0;
-    
-
+    public int PlayerMaterials;
+    [SerializeField] private TMP_Text MaterialsText, TravelSummary, KillSummary, ShieldsText;   
+    [SerializeField]private Slider HpBar;
+    public int PlayerHp, PlayerMaxHp;
+    private int Shields;
+    [SerializeField]private Image HpBarFill;
+    public ShieldScript Shield;
 
     private void Awake() 
-    { 
-    // If there is an instance, and it's not me, delete myself.
-    
-    if (Instance != null && Instance != this) 
-    { 
-        Destroy(this); 
-    } 
-    else 
-    { 
-        Instance = this; 
-    }   
-    Speed = 1;  
-    UpdateSpeedText();
-    
+    {         
+        PlayerHp=100;
+        PlayerMaxHp=100;
+
+        // If there is an instance, and it's not me, delete myself.
+        if (Instance != null && Instance != this) 
+        { 
+            Destroy(this); 
+        } 
+        else 
+        { 
+            Instance = this; 
+        }    
     }
     
    public void PickUpMaterial(int amount)
@@ -40,40 +41,39 @@ public class PlayerStats : MonoBehaviour
     }
 
     public void TakeDamage(int amount)
-    {
-        PlayerShields -= amount;
-        PlayerShieldsText.text = "" + PlayerShields ;
-        if (PlayerShields < 1) 
+    {       
+        PlayerHp -= amount;
+        HpBar.value = (float)PlayerHp / (float)PlayerMaxHp;
+        Color HealthBarColor = Color.Lerp(Color.red, Color.white, ((float)PlayerHp / (float)PlayerMaxHp));
+        HpBarFill.color = HealthBarColor;
+        if (PlayerHp > PlayerMaxHp)
         {
-            string killtext = Player.GetComponent<PlayerMovementScript>().MainGun.GetComponentInChildren<Gun>().ReportKillList(); // If dead without MainGun assigned
+            PlayerHp = PlayerMaxHp;
+        }      
+        if (PlayerHp < 1) 
+        {   
+            if (Player.GetComponentInChildren<MountScript>().GunChosen == true)
+            {                
+                MountScript rprtkill = Player.GetComponentInChildren<MountScript>();            
+                string killtext = rprtkill.ReportKillList(); // If dead without MainGun assigned
+                KillSummary.text = killtext; 
+            }           
             IsAlive = false;
             GameOverCanvas.gameObject.SetActive(true);
-             PauseMenuScript PMS = GameObject.Find("PauseCanvas").GetComponent<PauseMenuScript>();
+            PauseMenuScript PMS = GameObject.Find("PauseCanvas").GetComponent<PauseMenuScript>();
             PMS.PauseGame();
             PMS.gameObject.SetActive(false);
-            TravelSummary.text = "Distance travelled: " + (string.Format("{0:#,##0}", Distance)) + "m. \nFinal speed: " + Speed + "m/s."; 
-            KillSummary.text = killtext; 
-
-
+            
+            // TravelSummary.text = "Distance travelled: " + (string.Format("{0:#,##0}", Distance)) + "m. \nFinal speed: " + Speed + "m/s.";  
+            //***    call engine  *** 
         }
     }
 
-
-    void FixedUpdate()
+    public void ShieldChange(int a)
     {
-        UpdateDistance();
-    }
+        Shields += a;
+        ShieldsText.text = "" + Shields + "/" + Shield.GetMaxHits();
 
-
-    void UpdateDistance()
-    {
-        Distance += Speed * Time.deltaTime;        
-        DistanceText.text = "" + (string.Format("{0:#,##0}", Distance)) + "m";
     }
-
-    void UpdateSpeedText()
-    {
-        SpeedText.text = "" + Speed+ "m/s";
-        //link to engine particle emission rate over time
-    }
+    
 }

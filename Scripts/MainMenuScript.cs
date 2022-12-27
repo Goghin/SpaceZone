@@ -6,9 +6,16 @@ using UnityEngine.SceneManagement;
 
 public class MainMenuScript : MonoBehaviour
 {
-    public void PlayGame()
+    
+
+    public void Start()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1 );
+        Application.targetFrameRate = 50;
+    }
+    public void PlayGame()
+
+    {
+        SceneManager.LoadScene("Game");
     }
 
     public void QuitGame()

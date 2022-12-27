@@ -68,7 +68,7 @@ public class EnemyProjectileScript : MonoBehaviour
         {            
           
             Destroy(gameObject);
-            collision.gameObject.GetComponent<PlayerStats>().TakeDamage(1);
+            collision.gameObject.GetComponent<PlayerStats>().TakeDamage(Damage);
                
         }
         

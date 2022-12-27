@@ -4,23 +4,18 @@ using UnityEngine;
 
 public class AsteroidScript : MonoBehaviour
 {
-
     public int HitPoints;    
-    [SerializeField]private GameObject MaterialDrop, audioPrefab;
+    [SerializeField]private GameObject MaterialDrop;
     [SerializeField]private ParticleSystem PSPrefab;
     [SerializeField]private Sprite[] SpriteArray;
     private Vector3 Scale;
     private Color newColor;
     private Rigidbody2D body;
     private EnemyManagerScript EnemyManager;
-    private AudioSource SoundPlayer;
-  
-    [SerializeField]private AudioClip GetHitSound;
-   [SerializeField] private AudioClip DeathSound;
- 
+    private bool IsDead = false;
+
     public void Initialize(int Hp, float s, Vector2 dir, float scale, EnemyManagerScript em)
-          {
-            SoundPlayer = GetComponent<AudioSource>();
+          {         
             EnemyManager = em;
             SpriteRenderer spr = GetComponent<SpriteRenderer>();
             spr.sprite = SpriteArray[Random.Range(0, SpriteArray.Length)]; //Picks sprite from array                        
@@ -34,32 +29,29 @@ public class AsteroidScript : MonoBehaviour
             body.mass *= (1f+scale*3) * (1f+scale*3); //Scales mass            
             HitPoints = Hp;   
             gameObject.name = "Asteroid" ; 
-
           }  
   
     void OnCollisionEnter2D(Collision2D collision)
     {          
       if (collision.gameObject.tag == "Enemy")
         {
-          SoundPlayer.clip = GetHitSound;
-          SoundPlayer.Play();
           ParticleSystem Shards = Instantiate( PSPrefab, new Vector3( collision.GetContact(0).point.x , collision.GetContact(0).point.y , 1) , transform.rotation);
           Shards.GetComponent<Renderer>().material.color = newColor;   
           Shards.transform.localScale = Scale; 
-          Rigidbody2D other = collision.gameObject.GetComponent<Rigidbody2D>();
-          transform.GetComponent<Rigidbody2D>().AddForce(collision.GetContact(0).normal * other.mass * 30f);     
+          if( (body != null) && (collision.gameObject.GetComponent<Rigidbody2D>() != null))
+          {
+            body.AddForce(collision.GetContact(0).normal * collision.gameObject.GetComponent<Rigidbody2D>().mass * 50f); 
+          }
           TakeDamage(1) ;                
         }
 
         if (collision.gameObject.tag == "Player")
         {                    
-          Death();              
+          //Death();              
         }
 
         if (collision.gameObject.tag == "Projectile")
-        { 
-          SoundPlayer.clip = GetHitSound;
-          SoundPlayer.Play();
+        {          
           Gun killer = collision.gameObject.GetComponent<BulletScript>().FiredFrom;
           int dmg = collision.gameObject.GetComponent<BulletScript>().gunDamage;
           float force = collision.gameObject.GetComponent<BulletScript>().Force;
@@ -68,16 +60,13 @@ public class AsteroidScript : MonoBehaviour
           Shards.GetComponent<Renderer>().material.color = newColor;   
           Shards.transform.localScale = new Vector3(.13f,.13f,1); 
           TakeDamage(dmg , killer);        
-        }
-               
+        }              
     }
 
     void OnTriggerEnter2D(Collider2D collision)
     {          
     if (collision.gameObject.tag == "Projectile")
-        {
-          SoundPlayer.clip = GetHitSound;
-          SoundPlayer.Play();
+        {         
           Gun killer = collision.gameObject.GetComponent<BulletScript>().FiredFrom;
           int dmg = collision.gameObject.GetComponent<BulletScript>().gunDamage;                             
           ParticleSystem Shards = Instantiate( PSPrefab,  transform.position , transform.rotation);
@@ -101,14 +90,16 @@ public class AsteroidScript : MonoBehaviour
       HitPoints -= dmg;     
       if (HitPoints < 1)
       {   
-        killer.AddKill(this.name);
-              
+        killer.AddKill(this.name);            
         Death();
       }
     }
 
      public void Death()
      {
+      if(IsDead == false)
+      {
+        IsDead  = true;
         for (int i = 0; i < Random.Range(3,10); i++)
             {
             ParticleSystem Shards = Instantiate( PSPrefab, transform.position , transform.rotation);
@@ -117,17 +108,13 @@ public class AsteroidScript : MonoBehaviour
             }
         if (Random.Range(0,101)<=50)
           {
-          GameObject lootdrop = Instantiate(MaterialDrop, transform.position, transform.rotation);        
+          GameObject lootdrop = Instantiate(MaterialDrop, transform.position, Quaternion.identity);        
           // Initialize(int amount )
-          lootdrop.GetComponent<MaterialsScript>().Initialize( 1 ); //Different Amounts ??
-          }
-          GameObject clone = Instantiate(audioPrefab, transform.position, transform.rotation) as GameObject;
-          AudioSource cloneAudio = clone.GetComponent<AudioSource>();
-          cloneAudio.clip = DeathSound;
-          cloneAudio.Play();
-          Destroy(clone, DeathSound.length + 0.1f);
-        
-        Destroy(gameObject);        
+          lootdrop.GetComponent<LootDrop>().Initialize(  ); //Different Amounts ??
+          }        
+        Destroy(gameObject);     
+      }
+           
      }
 
      public void OnDisable()

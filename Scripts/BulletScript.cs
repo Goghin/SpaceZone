@@ -4,22 +4,16 @@ using UnityEngine;
 
 public class BulletScript : MonoBehaviour
 {
-    private float Speed, LifeTime;
-    private Vector3 Direction;
+   
     public int gunDamage;
-    private Color bulletColor;
     private int Hits;
     public Gun FiredFrom;
     public float Force;
     
        
-    public void Initialize(int dmg, float s, Color c, Vector3 dir, float lifeTime, int hits, float force, Gun parent)
+    public void Initialize(int dmg, float s, Color color, float lifeTime, int hits, float force, Gun parent)
           {
             gunDamage = dmg;
-            Speed = s;
-            bulletColor = c;
-            Direction = dir;
-            LifeTime = lifeTime;
             Hits = hits;
             Force = force;
             FiredFrom = parent;
@@ -27,21 +21,20 @@ public class BulletScript : MonoBehaviour
             LineRenderer LR = GetComponentInChildren<LineRenderer>();
               if (LR != null)
               {
-                LR.startColor = bulletColor;
-                LR.endColor = bulletColor ;
+                LR.startColor = Color.white; // color;
+                LR.endColor = color ;
               }
             
             SpriteRenderer SR = GetComponentInChildren<SpriteRenderer>();
             if (SR != null)
               {
-                SR.color = bulletColor;
+                SR.color = color;
               }
 
             Rigidbody2D body = gameObject.GetComponent<Rigidbody2D>();
-            body.AddForce(dir * s , ForceMode2D.Impulse); //Pushes object
-
-            Destroy(gameObject, LifeTime);
-
+            body.AddForce(transform.up * s , ForceMode2D.Impulse); //Pushes object
+            
+            Destroy(gameObject, lifeTime);
           }  
 
     void OnCollisionEnter2D(Collision2D collision)

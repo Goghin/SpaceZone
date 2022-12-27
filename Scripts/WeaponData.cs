@@ -7,6 +7,8 @@ public class WeaponData : ScriptableObject
 {
     [Header("Info")]
     public string Name;
+    public Sprite Image;
+    public string Description;
 
     [Header("Base stats")]
     public int Damage;   
@@ -17,7 +19,6 @@ public class WeaponData : ScriptableObject
     public float LifeTime;
     public float Force;
     
-
     [Header("Upgrade stats")]
     public int dmgPerLVL;   
     public float FRperLVL;

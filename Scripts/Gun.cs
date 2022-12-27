@@ -13,15 +13,16 @@ public class Gun : MonoBehaviour
     
     private List<KillTracker> KillList = new List<KillTracker>();
   
-        
-    public int Cost = 3;
+    public string Description;    
+    public int Cost = 1;
     public string Name = "Gun";
-    public int Damage= 1;
+    public int Damage =  1;
     public float FireRate = 1;
     public int Hits = 1;
     public float LifeTime = 1 ; 
     public int Kills = 0;
     public float Force = 1;
+    public Sprite Image;
     private ParticleSystem PS;
     private AudioClip ShootSound;
     AudioSource SoundPlayer;
@@ -69,14 +70,13 @@ public class Gun : MonoBehaviour
     public void Fire()
     {       
         GameObject bullet = Instantiate(weaponData.Bullet, transform.position, transform.rotation) ;           
-        //  Initialize(int dmg, float speed, Color c, Vector3 direction, float lifeTime, int maxhits,, float force, Reference to Gun Script)
-        bullet.GetComponent<BulletScript>().Initialize(Damage, weaponData.ProjectileSpeed, weaponData.color, new Vector3( 0, 1 ,0 ), LifeTime, Hits, Force, this );    // Needs to find a vector for gun rotation              
-        SoundPlayer.clip = ShootSound;
+        //  Initialize(int dmg, float speed, Color c, float lifeTime, int maxhits,, float force, Reference to Gun Script)
+        bullet.GetComponent<BulletScript>().Initialize(Damage, weaponData.ProjectileSpeed, weaponData.color, LifeTime, Hits, Force, this );    
         SoundPlayer.Play();
         PS.Play();    
         
     }
-
+  
     public void AddKill(string targetname)
     {
         bool found = false;
@@ -109,6 +109,12 @@ public class Gun : MonoBehaviour
         }
         return result;
     }    
+
+    public List<KillTracker> GetKillList()
+{
+    return KillList;
+}
+
 }
 
 public class KillTracker
@@ -130,6 +136,10 @@ public class KillTracker
     {
         Kills +=1;
     }
+    public void AddKills(int a)
+    {
+        Kills +=a;
+    }
 
     public int GetKills()
     {
@@ -137,3 +147,4 @@ public class KillTracker
     }
 
 }
+
